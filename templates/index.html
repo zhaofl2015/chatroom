@@ -1,0 +1,45 @@
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    socket.on('connect', function() {
+        socket.emit('new arrival', {message: 'I\'m connected!'});
+    });
+
+//	socket.on('notice', function(data){
+//		console.log(data);
+//	});
+
+
+    socket.on("notice", function(data){
+		var msg = document.getElementById('all').value;
+		document.getElementById('all').innerText = msg + "\n" + data.message;
+	});
+
+    socket.on("disconnect", function() {
+        socket.emit('disconnect', 'some leave the room');
+    });
+
+	var chat_fn = function(){
+		var msg = document.getElementById("message").value;
+		socket.emit("chat", {message: msg});
+	};
+
+
+	socket.on("nickname ready", function(data){
+		alert("nickname changed.");
+	});
+
+	var change_nickname = function(){
+		var nickname = document.getElementById("nickname").value;
+		socket.emit('set nickname', nickname);
+	};
+</script>
+
+<textarea id="all" cols=40 rows=20></textarea>
+<br />
+<label>Message:</label>
+<input id="message" type="text" name="message" cols=120/>
+<input id="chat_btn" type="button" value="chat" onclick="javascript:chat_fn()" />
+<label>NickName:</label>
+<input id="nickname" type="text" name="nickname" />
+<input id="chang_name" type="button" value="nickname" onclick="javascript:change_nickname()" />
