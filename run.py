@@ -23,6 +23,11 @@ def index():
     return render_template('index.html')
 
 
+@socketio.on('message')
+def handle_string(msg):
+    print 'got %s' % msg
+
+
 @socketio.on('connect')
 def handle_message():
     print('somebody connect this, %s' % format_datetime(now_lambda()))
@@ -31,24 +36,28 @@ def handle_message():
 @socketio.on('new arrival')
 def handle_message_arrival(data):
     print('got message %s, %s' % (data['message'], format_datetime(now_lambda())))
-    emit('notice', {'message': 'welcome you %d' % random.randint(1, 1000)}, broadcast=True)
+    emit('notice', {'message': '欢迎新用户到来 %d' % random.randint(1, 1000)}, broadcast=True)
 
 
 @socketio.on('disconnect')
-def handle_disconnect(data):
-    print data
+def handle_disconnect():
+    print '断开了链接'
 
 
 @socketio.on('set nickname')
 def set_nickname(nickname):
     session['nickname'] = nickname
-    emit('notice', {'message': 'nickname ready'})
+    # emit('notice', {'message': '昵称设置为%s' % nickname})
+    emit('nickname ready', nickname, callback=ack)
+    return 'ganggang'
+
+def ack():
+    print 'message was received'
 
 
 @socketio.on('chat')
 def chat(data):
     nickname = session['nickname']
-    emit('notice', {'message': '%s: %s' % (nickname, data['message'])})
     emit('notice', {'message': '%s: %s' % (nickname, data['message'])}, broadcast=True)
 
 
@@ -91,4 +100,4 @@ def chat(data):
 
 
 if __name__ == '__main__':
-    socketio.run(app, port=5003)
+    socketio.run(app, port=5003, debug=True)
